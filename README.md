@@ -11,9 +11,9 @@ thực hành xuyên suốt Phần III của khóa học.
 
 2. Mở tab **Redis CLI**. Bạn sẽ thấy một lệnh dạng:
 
-   \`\`\`
+   ```bash
    redis-cli -u redis://default:iCbC3AEsPSp1epaR2zNVTN2ur@shop-snail-letters-32968.db.redis.io:10169
-   \`\`\`
+   ```
 
 3. Phần **phía sau `redis-cli -u`** chính là `REDIS_URL`. Copy nó vào `.env` là xong.
 
