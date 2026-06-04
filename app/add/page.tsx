@@ -1,14 +1,23 @@
+import { createBook } from "@/app/actions";
 import Link from "next/link";
 
-export default function AddBookPage() {
-  // Server Action TẠM (stub) — hiện chỉ in ra console, chưa lưu gì.
+export default async function AddBookPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string }>;
+}) {
+  const { error } = await searchParams;
+  // server action bắt lỗi (vd trùng tên) rồi redirect kèm thông báo.
   async function action(formData: FormData) {
     "use server";
-    const title = formData.get("title");
-    const author = formData.get("author");
-    const year = formData.get("year");
-    // todo: lưu book
-    console.log("New book:", { title, author, year });
+    const { redirect } = await import("next/navigation");
+    try {
+      await createBook(formData);
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Có lỗi xảy ra";
+      redirect(`/add?error=${encodeURIComponent(msg)}`);
+    }
+    redirect("/");
   }
 
   return (
@@ -28,6 +37,19 @@ export default function AddBookPage() {
       >
         Tên sách phải là duy nhất — Redis sẽ chặn nếu trùng.
       </p>
+
+      {error && (
+        <div
+          className="mb-6 rounded-lg border px-4 py-3 text-sm"
+          style={{
+            borderColor: "var(--accent)",
+            backgroundColor: "rgba(180,69,31,0.08)",
+            color: "var(--accent)",
+          }}
+        >
+          {error}
+        </div>
+      )}
 
       <form
         action={action}

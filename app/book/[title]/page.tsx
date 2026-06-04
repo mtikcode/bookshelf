@@ -1,4 +1,9 @@
+import redis from "@/lib/redis";
+import { incrementViews } from "@/app/actions";
 import Link from "next/link";
+import { notFound } from "next/navigation";
+
+export const dynamic = "force-dynamic";
 
 export default async function BookDetailPage({
   params,
@@ -8,14 +13,11 @@ export default async function BookDetailPage({
   const { title: rawTitle } = await params;
   const title = decodeURIComponent(rawTitle);
 
-  // dữ liệu mẫu
-  const book = {
-    title,
-    author: "—",
-    year: "—",
-    views: "0",
-    id: "—",
-  };
+  // Mỗi lần xem chi tiết -> tăng views bằng HINCRBY (atomic counter).
+  await incrementViews(title);
+
+  const book = await redis.hgetall(`book:${title}`);
+  if (!book || !book.title) notFound();
 
   return (
     <div className="rise mx-auto max-w-lg">
@@ -57,7 +59,7 @@ export default async function BookDetailPage({
         />
         <Stat
           label="ID"
-          value={book.id.slice(0, 8)}
+          value={(book.id ?? "—").slice(0, 8)}
           mono
         />
       </div>

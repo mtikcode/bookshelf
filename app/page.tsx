@@ -1,26 +1,34 @@
+import redis from "@/lib/redis";
 import Link from "next/link";
 
 type Book = {
+  id?: string;
   title: string;
   author: string;
   year: string;
   views: string;
 };
 
-// dữ liệu mẫu
-const placeholderBooks: Book[] = [
-  { title: "Clean Code", author: "Robert C. Martin", year: "2008", views: "0" },
-  { title: "Refactoring", author: "Martin Fowler", year: "1999", views: "0" },
-  {
-    title: "The Pragmatic Programmer",
-    author: "Andrew Hunt",
-    year: "1999",
-    views: "0",
-  },
-];
+export const dynamic = "force-dynamic";
 
-export default function HomePage() {
-  const books = placeholderBooks;
+export default async function HomePage() {
+  // lấy 20 title mới nhất từ Sorted Set
+  const titles = await redis.zrange("books", 0, 19, "REV");
+
+  // gom tất cả hgetall vào 1 PIPELINE -> chỉ 1 round trip thay vì N round trip.
+  console.time("load-books");
+  const pipeline = redis.pipeline();
+  titles.forEach((title) => {
+    pipeline.hgetall(`book:${title}`);
+  });
+  const results = await pipeline.exec();
+  console.timeEnd("load-books");
+
+  // exec() trả về mảng [error, result] pairs -> extract phần data ra.
+  const books =
+    results
+      ?.map(([err, data]) => (err ? null : (data as Book)))
+      .filter((b): b is Book => Boolean(b && b.title)) ?? [];
 
   return (
     <div>
