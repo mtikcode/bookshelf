@@ -26,7 +26,7 @@ pnpm i
 # 2. Tạo file .env.local từ mẫu, rồi dán REDIS_URL từ Redis Cloud
 cp .env.local.example .env.local
 
-# 3. (Tùy chọn) Seed 100 sách để test Pipeline
+# 3. (Tùy chọn) Seed 100 sách để test Pipeline - chuyển sang branch 'complete' mới có script seed.
 pnpm seed
 
 # 4. Chạy dev server
